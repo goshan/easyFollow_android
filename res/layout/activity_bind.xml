@@ -1,0 +1,139 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <Button
+        android:id="@+id/bindingButton_Bind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="30dp"
+        android:layout_marginTop="20dp"
+        android:text="@string/binding" />
+
+    <TextView
+        android:id="@+id/renren_Bind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/bindingButton_Bind"
+        android:layout_marginLeft="48dp"
+        android:layout_marginTop="88dp"
+        android:text="@string/renren_title"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <Button
+        android:id="@+id/renrenSwitch_Bind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/renren_Bind"
+        android:layout_alignBottom="@+id/renren_Bind"
+        android:layout_toLeftOf="@+id/bindingButton_Bind"
+        android:text="@string/binding" />
+    
+     <Button
+        android:id="@+id/renrenSwitchDown_Bind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/renrenSwitch_Bind"
+        android:layout_alignBottom="@+id/renrenSwitch_Bind"
+        android:layout_alignLeft="@+id/bindingButton_Bind"
+        android:text="@string/back_to_shake" />
+
+    <Button
+        android:id="@+id/backButton_Bind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/bindingButton_Bind"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="24dp"
+        android:text="@string/back_to_shake" />
+
+
+
+    <TextView
+        android:id="@+id/sina_Bind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/renren_Bind"
+        android:layout_centerVertical="true"
+        android:text="@string/sina_title"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <Button
+        android:id="@+id/sinaSwitch_Bind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/sina_Bind"
+        android:layout_alignBottom="@+id/sina_Bind"
+        android:layout_toLeftOf="@+id/renrenSwitchDown_Bind"
+        android:text="@string/binding" />
+
+    <Button
+        android:id="@+id/sinaSwitchDown_Bind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/sinaSwitch_Bind"
+        android:layout_alignBottom="@+id/sinaSwitch_Bind"
+        android:layout_alignLeft="@+id/renrenSwitchDown_Bind"
+        android:text="@string/back_to_shake" />
+
+    <TextView
+        android:id="@+id/tencent_Bind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/sina_Bind"
+        android:layout_below="@+id/sinaSwitch_Bind"
+        android:layout_marginTop="40dp"
+        android:text="@string/tencent_title"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <Button
+        android:id="@+id/tecentSwitch_Bind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/tencent_Bind"
+        android:layout_alignBottom="@+id/tencent_Bind"
+        android:layout_alignLeft="@+id/sinaSwitch_Bind"
+        android:text="@string/binding" />
+
+    <Button
+        android:id="@+id/tecentSwitchDown_Bind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/tecentSwitch_Bind"
+        android:layout_alignBottom="@+id/tecentSwitch_Bind"
+        android:layout_alignLeft="@+id/sinaSwitchDown_Bind"
+        android:text="@string/back_to_shake" />
+
+    <TextView
+        android:id="@+id/douban_Bind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/tencent_Bind"
+        android:layout_below="@+id/tecentSwitch_Bind"
+        android:layout_marginTop="37dp"
+        android:text="@string/douban_title"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <Button
+        android:id="@+id/doubanSwitch_Bind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/douban_Bind"
+        android:layout_alignBottom="@+id/douban_Bind"
+        android:layout_alignLeft="@+id/tecentSwitch_Bind"
+        android:text="@string/binding" />
+
+    <Button
+        android:id="@+id/doubanSwitchDown_Bind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/doubanSwitch_Bind"
+        android:layout_alignBottom="@+id/doubanSwitch_Bind"
+        android:layout_alignLeft="@+id/tecentSwitchDown_Bind"
+        android:text="@string/back_to_shake" />
+
+</RelativeLayout>

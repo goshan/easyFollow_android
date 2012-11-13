@@ -1,8 +1,23 @@
 <resources>
 
-    <string name="app_name">Easyfollow_Android</string>
+    <string name="app_name">RenrenSdkDemo</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_renren">RenrenActivity</string>
+    <string name="title_activity_shake">ShakeActivity</string>
+    <string name="title_activity_bind">BindActivity</string>
+    <string name="auth_string">请登录</string>
+    <string name="auth_success">登陆成功</string>
+    <string name="auth_failed">登陆失败</string>
+    <string name="binding">绑定</string>
+    <string name="shake">摇一摇，找朋友</string>
+    <string name="check_friends">查看朋友</string>
+    <string name="back_to_shake">返回</string>
+    
+    <string name="renren_title">人人网</string>
+    <string name="sina_title">新浪微博</string>
+    <string name="tencent_title">腾讯微博</string>
+    <string name="douban_title">豆瓣</string>
+    
 
 </resources>
