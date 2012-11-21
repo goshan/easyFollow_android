@@ -8,19 +8,24 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.HashMap;
 
+import org.json.JSONObject;
+
+import android.os.Handler;
 import android.util.Log;
 
 public class UrlThread extends Thread {
-	private static String urlHead = "http://192.168.1.105:3000";
+	private static String urlHead = "http://192.168.1.104:3000";
 	
 	private HashMap<String, String> param;
 	private String type;
+	private Handler hand;
 	
-	private String result;
+	private String result = null;
 	
-	public UrlThread(HashMap<String, String> param, String type){
+	public UrlThread(HashMap<String, String> param, String type, Handler hand){
 		this.param = param;
 		this.type = type;
+		this.hand = hand;
 	}
 	
 	public void run(){
@@ -39,7 +44,6 @@ public class UrlThread extends Thread {
 				url += "/lookfor.json?" +buildUrl(param);
 			}
 
-
 			Log.d("Url info", url);
 			URL realUrl = new URL(url);
 			//打开和URL之间的连接
@@ -52,51 +56,52 @@ public class UrlThread extends Thread {
 			while ((tmp = in.readLine()) != null){
 				sb.append(tmp+"\n");
 			}
-			Log.d("return json", sb.toString());
 			in.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		result = sb.toString();
+		
+		String json = sb.toString();
+		Log.d("UrlThread return json", json);
+		// 没得到结果
+		if (json.equals("")){
+			hand.sendEmptyMessage(0);
+			return;
+		}
+		
+		if (type.equals("regist") || type.equals("update")){
+			String token = "default";
+			String success = "";
+			try {
+				JSONObject jsonObj = new JSONObject(json);
+				token = jsonObj.getString("token");
+				success = jsonObj.getString("result");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			// success才存储token
+			if (success.equals("success")){
+				result = token;
+			}
+			hand.sendEmptyMessage(0);
+		}
+		else if (type.equals("shake")){
+			String name = ""; 
+			String success = "";
+			try {
+				JSONObject jsonObj = new JSONObject(json);
+				result = jsonObj.getString("result");
+				JSONObject nearby = jsonObj.getJSONObject("nearby");
+				name = nearby.getString("name");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			if (success.equals("success")){
+				result = name;
+			}
+		}
 	}
 	
-//	public static String getResponse(HashMap<String, String> param, String type){
-//		StringBuffer result = new StringBuffer();
-//		BufferedReader in = null;
-//		try {
-//			String url = urlHead;
-//			if (type.equals("regist")){
-//				url += "/create_user.json?" +buildUrl(param);
-//				
-//			}
-//			else if (type.equals("update")){
-//				url += "/update_user.json?" +buildUrl(param);
-//			}
-//			else if (type.equals("shake")){
-//				url += "/lookfor.json?" +buildUrl(param);
-//			}
-//
-//
-//			Log.d("Url info", url);
-//			URL realUrl = new URL(url);
-//			//打开和URL之间的连接
-//			URLConnection conn = realUrl.openConnection();
-//			conn.connect(); 
-//			
-//			in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-//			
-//			String tmp = "";
-//			while ((tmp = in.readLine()) != null){
-//				result.append(tmp+"\n");
-//			}
-//			Log.d("return json", result.toString());
-//			in.close();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		
-//		return result.toString();
-//	}
 	
 	public String getResult(){
 		return result;

@@ -2,13 +2,13 @@ package com.easyfollow.binding;
 
 import java.util.HashMap;
 
-import org.json.JSONObject;
-
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
@@ -19,8 +19,8 @@ import android.widget.Toast;
 import com.dongxuexidu.douban4j.model.app.RequestGrantScope;
 import com.dongxuexidu.douban4j.provider.OAuthDoubanProvider;
 import com.easyfollow.shake.ShakeActivity;
-import com.easyfollow.util.Client;
 import com.easyfollow.util.DoubanWebview;
+import com.easyfollow.util.UrlThread;
 import com.example.renrensdkdemo.R;
 import com.renren.api.connect.android.Renren;
 import com.renren.api.connect.android.Util;
@@ -105,6 +105,13 @@ public class BindActivity extends Activity {
 	//返回shake
 	private Button backShake;
 	
+	//loading
+    private ProgressDialog pd = null;
+    //通信进程
+    private UrlThread t;
+    // 处理通信进程结果
+	private Handler thHandler;
+    
 	
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -264,17 +271,35 @@ public class BindActivity extends Activity {
         });
         
     	
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         //绑定所有按钮的事件
         bindAll.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				
+				Log.d("BindActivity", "bind_click");
+				// loading 开始
+				pd = ProgressDialog.show(BindActivity.this, "", "绑定中...", true, false);
+				// 可以停止loading
+				pd.setCancelable(true);
+				Log.d("BindActivity", "pd show on click");
 				SharedPreferences settings = getSharedPreferences("BindPre", MODE_PRIVATE);
 				// 是否有token，有是更新事件，没有是注册时间
 				String defaultToken = settings.getString("token", "default");
-				Log.d("default token", defaultToken);
+				Log.d("BindActivity default token", defaultToken);
 				
 				//参数
 				HashMap<String, String> param = new HashMap<String, String>();
+				
 				param.put("default_info", "0");
 				//using_sns
 				String sns = "";
@@ -312,38 +337,33 @@ public class BindActivity extends Activity {
 				
 				param.put("using_sns", sns);
 				
-				String json = "";
+				String type = "";
 				//注册
 				if (defaultToken.equals("default")){
 					param.put("signup_from", "2");
 					param.put("android_imei", imei);
 					
-					json = Client.getResponse(param, "regist");
+					type = "regist";
 				}
 				//更新
 				else {
 					param.put("token", settings.getString("token", "default"));
-					json = Client.getResponse(param, "update");
-				}
-					
-				//得到json，存储本应用token
-				Log.d("result", json);
-				
-				String token = "default";
-				try {
-					JSONObject jsonObj = new JSONObject(json);
-					token = jsonObj.getString("token");
-				} catch (Exception e) {
-					e.printStackTrace();
+					type = "update";
 				}
 				
-				Log.d("token", token);
-				//存储token
-				SharedPreferences.Editor editor = settings.edit();
-                editor.putString("token", token);
-                editor.commit();					
+				//与服务器通信
+				Log.d("Connect", "thread");
+				t = new UrlThread(param, type, thHandler);
+				t.start();
+				
 			}
 		});
+        
+        
+        
+        
+        
+        
         
         //返回按钮的事件
         backShake.setOnClickListener(new View.OnClickListener() {
@@ -390,6 +410,27 @@ public class BindActivity extends Activity {
 		
 		imei = ((TelephonyManager) getSystemService(TELEPHONY_SERVICE))
 				.getDeviceId();
+		
+		thHandler = new Handler(){
+	    	@Override
+	        public void handleMessage(Message msg) {
+	    		String token = t.getResult();
+	    		//token为空
+	    		if (token == null){
+	    			Toast.makeText(getApplicationContext(), "绑定失败", Toast.LENGTH_SHORT).show();
+	    		}
+	    		//保存token
+	    		else {
+	    			SharedPreferences settings = getSharedPreferences("BindPre", MODE_PRIVATE);
+	    			SharedPreferences.Editor editor = settings.edit();
+	    			editor.putString("token", token);
+	    			editor.commit();
+	    			Toast.makeText(getApplicationContext(), "绑定成功", Toast.LENGTH_SHORT).show();
+	    		}
+	    		// loading停止
+	    		pd.dismiss();
+	        }
+	    };
     }
 
     

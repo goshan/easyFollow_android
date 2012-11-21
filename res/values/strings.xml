@@ -10,6 +10,7 @@
     <string name="auth_success">登陆成功</string>
     <string name="auth_failed">登陆失败</string>
     <string name="binding">绑定</string>
+    <string name="edit">编辑</string>
     <string name="shake">摇一摇，找朋友</string>
     <string name="check_friends">查看朋友</string>
     <string name="back_to_shake">返回</string>

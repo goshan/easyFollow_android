@@ -2,12 +2,12 @@ package com.easyfollow.shake;
 
 import java.util.HashMap;
 
-import org.json.JSONObject;
-
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -17,22 +17,32 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.Vibrator;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.easyfollow.binding.BindActivity;
-import com.easyfollow.util.Client;
+import com.easyfollow.util.UrlThread;
 import com.example.renrensdkdemo.R;
 
 //需要实现SensorEventListener接口
 public class ShakeActivity extends Activity implements SensorEventListener{
+
 	// 绑定按钮
-	Button bind;
+	private Button bind;
 	// 摇一摇按钮
-	Button shake;
+	private Button shake;
+	// 星星
+	private ImageView star;
 
 	//定义sensor管理器
 	private SensorManager mSensorManager;
@@ -43,11 +53,88 @@ public class ShakeActivity extends Activity implements SensorEventListener{
     //地理位置类
     private Criteria criteria;
     
+	//loading
+    private ProgressDialog pd = null;
+    //通信进程
+    private UrlThread t;
+    // 处理通信进程结果
+	private Handler thHandler;
+	
+    
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_shake);
-            
-		//获取传感器管理服务
+		setContentView(R.layout.activity_new_shake);
+
+		init();
+		
+		bind.setOnClickListener(new Button.OnClickListener(){
+			@Override
+			public void onClick(View arg0) {
+				//跳转Activity
+				Intent i = new Intent();
+				i.setClass(ShakeActivity.this, BindActivity.class);
+				startActivity(i);
+			}
+		});
+		
+		shake.setOnClickListener(new Button.OnClickListener(){
+			@Override
+			public void onClick(View arg0) {
+				//摇动手机后，再伴随震动提示
+				vibrator.vibrate(300);
+				getLocationInfo();
+			}
+		});
+    }
+    
+    // 初始化并调整位置
+ 	private void init(){
+ 		//得到屏幕宽和高
+ 		WindowManager windowManager = getWindowManager();
+ 		Display display = windowManager.getDefaultDisplay();
+ 		int screenWidth = display.getWidth();
+ 		int screenHeight = display.getHeight();
+ 		Log.d("width", Integer.toString(screenWidth));
+ 		Log.d("height", Integer.toString(screenHeight));
+         
+ 		bind = (Button) findViewById(R.id.ef_shake_binding_button);
+ 		bind.setTextColor(Color.WHITE);
+ 		bind.getBackground().setAlpha(64);
+ 		
+ 		
+ 		star = (ImageView) findViewById(R.id.ef_shake_imageStar);
+ 		RelativeLayout.LayoutParams lay_star = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.FILL_PARENT);
+ 		lay_star.height = (int)(18.0*(double)screenHeight/48.0);
+ 		lay_star.width = lay_star.height;
+ 		lay_star.addRule(RelativeLayout.CENTER_HORIZONTAL);
+ 		lay_star.addRule(RelativeLayout.ALIGN_TOP);
+ 		lay_star.topMargin = (int)(61.0*(double)screenHeight/480.0);
+ 		Log.d("star_margin_top", Integer.toString(lay_star.topMargin));
+ 		star.setLayoutParams(lay_star);
+ 		
+ 		
+ 		shake = (Button) findViewById(R.id.ef_shake_shake_button);
+ 		int shake_height = (int)(42.0*(double)screenHeight/480.0);
+ 		int shake_width = (int)(42.0*(double)screenHeight*202.0/(480.0*42.0));
+ 		Log.d("shake_width", Integer.toString(shake_width));
+        Log.d("shake_height", Integer.toString(shake_height));
+ 		RelativeLayout.LayoutParams lay_shake = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.FILL_PARENT);
+ 		lay_shake.height = shake_height;
+ 		lay_shake.width = shake_width;
+ 		lay_shake.addRule(RelativeLayout.CENTER_HORIZONTAL);
+ 		lay_shake.addRule(RelativeLayout.ALIGN_BOTTOM);
+ 		lay_shake.addRule(RelativeLayout.BELOW, R.id.ef_shake_imageStar);
+// 		lay_shake.bottomMargin = (int)(60.0*(double)screenHeight/480.0);
+ 		lay_shake.topMargin = (int)(57.0*(double)screenHeight/480.0);
+ 		Log.d("shake_margin_top", Integer.toString(lay_shake.topMargin));
+ 		shake.setLayoutParams(lay_shake);
+ 		
+ 		RelativeLayout linear = (RelativeLayout) findViewById(R.id.ef_shake_linear_layout);
+ 		int linear_height = (int)(44.0*(double)screenHeight/480.0);
+ 		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, linear_height);
+ 		linear.setLayoutParams(params);
+ 		
+ 		//获取传感器管理服务
 		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		//震动
 		vibrator = (Vibrator) getSystemService(Service.VIBRATOR_SERVICE);
@@ -69,30 +156,25 @@ public class ShakeActivity extends Activity implements SensorEventListener{
 		//设置是否需要返回速度信息
 		criteria.setSpeedRequired(false);
 		
-		
-		bind = (Button) findViewById(R.id.bindingButton_Shake);
-		shake = (Button) findViewById(R.id.shake_check);
-		
-		bind.setOnClickListener(new Button.OnClickListener(){
-			@Override
-			public void onClick(View arg0) {
-				//跳转Activity
-				Intent i = new Intent();
-				i.setClass(ShakeActivity.this, BindActivity.class);
-				startActivity(i);
-			}
-		});
-		
-		shake.setOnClickListener(new Button.OnClickListener(){
-			@Override
-			public void onClick(View arg0) {
-				//摇动手机后，再伴随震动提示
-				vibrator.vibrate(300);
-				getLocationInfo();
-			}
-		});
-    }
-
+		thHandler = new Handler(){
+	    	@Override
+	        public void handleMessage(Message msg) {
+	    		String name = t.getResult();
+	    		if (name == null){
+	    			Toast.makeText(getApplicationContext(), "获取信息失败", Toast.LENGTH_SHORT).show();
+	    		}
+	    		else {
+	    			Toast.makeText(ShakeActivity.this, name, Toast.LENGTH_LONG).show();
+	    		}
+	    		// loading停止
+	    		if (pd != null)
+	    			pd.dismiss();
+	        }
+	    };
+ 	}
+ 	
+ 	
+ 	
 	@Override
 	protected void onResume(){
 		super.onResume();
@@ -138,7 +220,7 @@ public class ShakeActivity extends Activity implements SensorEventListener{
 		*/
 			if((Math.abs(values[0])>yu || Math.abs(values[1])>yu || Math.abs(values[2])>yu)){
 				//摇动手机后，再伴随震动提示
-				vibrator.vibrate(300);
+				vibrator.vibrate(350);
 				
 				getLocationInfo();
 			}
@@ -186,23 +268,15 @@ public class ShakeActivity extends Activity implements SensorEventListener{
 			param.put("latitude", Double.toString(latitude));
 			param.put("longitude", Double.toString(longitude));
 			
-			String json = Client.getResponse(param, "shake");
-			Log.d("shake json", json);
+			//与服务器通信
+			// loading 开始
+			pd = ProgressDialog.show(ShakeActivity.this, "", "查询中...", true, false);
+			// 可以停止loading
+			pd.setCancelable(true);
+			Log.d("Connect", "thread");
+			t = new UrlThread(param, "shake", thHandler);
+			t.start();
 			
-			String result = "";
-			try {
-				JSONObject jsonObj = new JSONObject(json);
-				result = jsonObj.getString("result");
-				if (result.equals("sucess")){
-					JSONObject nearby = jsonObj.getJSONObject("nearby");
-					String name = nearby.getString("name");
-//					int id = nearby.getInt("id");
-					Toast.makeText(ShakeActivity.this, name, Toast.LENGTH_LONG).show();
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-        	
         } catch (Exception e) {
             Toast.makeText(ShakeActivity.this,e.getMessage(), Toast.LENGTH_LONG).show();
         }
